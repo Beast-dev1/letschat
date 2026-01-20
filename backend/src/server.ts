@@ -48,14 +48,12 @@ app.use('/api/calls', callRoutes);
 // Error handling middleware (must be last)
 app.use(errorHandler);
 
-// Socket.io connection handling
-io.on('connection', (socket) => {
-  console.log('User connected:', socket.id);
+// Make io available to routes/controllers
+app.set('io', io);
 
-  socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
-  });
-});
+// Initialize Socket.io service
+import { initializeSocket } from './services/socketService';
+initializeSocket(io);
 
 // Start server
 httpServer.listen(PORT, () => {
