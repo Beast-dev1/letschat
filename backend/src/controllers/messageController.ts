@@ -240,6 +240,17 @@ export const sendMessage = async (req: AuthRequest, res: Response) => {
           });
         }
       });
+
+      // Emit message_delivered to sender for each recipient
+      chatMembers.forEach((member) => {
+        if (member.userId !== userId) {
+          io.to(`user:${userId}`).emit('message_delivered', {
+            messageId: message.id,
+            chatId: message.chatId,
+            userId: member.userId,
+          });
+        }
+      });
     }
 
     res.status(201).json({

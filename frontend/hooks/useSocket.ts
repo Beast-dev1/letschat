@@ -1,10 +1,13 @@
 import { useEffect, useCallback } from 'react';
 import { getSocket, disconnectSocket } from '@/lib/socket';
 import { useChatStore } from '@/store/chatStore';
+import { useAuthStore } from '@/store/authStore';
 import { Message } from '@/types';
+import { notificationService } from '@/lib/notifications';
 
 export const useSocket = () => {
-  const { addMessage, updateMessage, deleteMessage, updateChat, chats } = useChatStore();
+  const { addMessage, updateMessage, deleteMessage, updateChat, chats, activeChatId } = useChatStore();
+  const { user } = useAuthStore();
 
   useEffect(() => {
     const socket = getSocket();
@@ -17,6 +20,16 @@ export const useSocket = () => {
       const chat = chats.find((c) => c.id === message.chatId);
       if (chat) {
         updateChat(message.chatId, { lastMessage: message, updatedAt: message.createdAt });
+      }
+
+      // Show notification if message is not from current user and chat is not active
+      if (message.senderId !== user?.id && activeChatId !== message.chatId) {
+        notificationService.showMessageNotification(
+          message.sender?.username || 'Unknown',
+          message.content,
+          message.chatId,
+          message.sender?.avatarUrl
+        );
       }
     });
 
@@ -31,6 +44,20 @@ export const useSocket = () => {
     // Listen for message deletions
     socket.on('message_deleted', (data: { messageId: string; chatId: string }) => {
       deleteMessage(data.chatId, data.messageId);
+    });
+
+    // Listen for message delivery status
+    socket.on('message_delivered', (data: { messageId: string; chatId: string; userId: string }) => {
+      // Update message delivery status
+      const chat = chats.find((c) => c.id === data.chatId);
+      if (chat) {
+        const message = chat.messages?.find((m) => m.id === data.messageId);
+        if (message) {
+          updateMessage(data.chatId, data.messageId, {
+            readBy: [...(message.readBy || []), data.userId],
+          });
+        }
+      }
     });
 
     // Listen for message read receipts
@@ -77,17 +104,42 @@ export const useSocket = () => {
       });
     });
 
+    // Listen for last seen updates
+    socket.on('user_last_seen_updated', (data: { userId: string; lastSeen: Date }) => {
+      // Update user last seen in chats
+      chats.forEach((chat) => {
+        const member = chat.members?.find((m) => m.userId === data.userId);
+        if (member && member.user) {
+          member.user.lastSeen = new Date(data.lastSeen);
+          updateChat(chat.id, { members: chat.members });
+        }
+      });
+    });
+
+    // Listen for incoming calls
+    socket.on('incoming_call', (data: { callId: string; callerId: string; type: 'audio' | 'video'; chatId: string }) => {
+      // Show notification for incoming call
+      notificationService.showCallNotification(
+        'Incoming Call',
+        data.type,
+        data.callId
+      );
+    });
+
     // Cleanup
     return () => {
       socket.off('new_message');
       socket.off('message_updated');
       socket.off('message_deleted');
+      socket.off('message_delivered');
       socket.off('message_read');
       socket.off('user_typing');
       socket.off('user_online');
       socket.off('user_offline');
+      socket.off('user_last_seen_updated');
+      socket.off('incoming_call');
     };
-  }, [addMessage, updateMessage, deleteMessage, updateChat, chats]);
+  }, [addMessage, updateMessage, deleteMessage, updateChat, chats, activeChatId, user]);
 
   const emitTypingStart = useCallback((chatId: string) => {
     const socket = getSocket();

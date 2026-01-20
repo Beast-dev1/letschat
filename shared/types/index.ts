@@ -142,14 +142,21 @@ export interface SocketEvents {
 
   // Server → Client
   new_message: Message;
-  message_delivered: { messageId: string; chatId: string };
+  message_delivered: { messageId: string; chatId: string; userId: string };
   message_read: { messageId: string; userId: string };
   user_typing: { chatId: string; userId: string; username: string };
+  user_stopped_typing: { chatId: string; userId: string };
   user_online: { userId: string };
   user_offline: { userId: string };
+  user_last_seen_updated: { userId: string; lastSeen: Date };
   incoming_call: { callId: string; callerId: string; type: CallType; chatId: string };
   call_accepted: { callId: string };
   call_rejected: { callId: string };
   call_ended: { callId: string };
+  contact_request_received: { contactId: string; userId: string; username: string };
+  contact_request_accepted: { contactId: string; userId: string };
+  contact_request_rejected: { contactId: string; userId: string };
+  contact_removed: { contactId: string; userId: string };
+  contact_blocked: { contactId: string; userId: string };
 }
 

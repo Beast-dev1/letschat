@@ -32,6 +32,7 @@ import authRoutes from './routes/auth.routes';
 import chatRoutes from './routes/chat.routes';
 import messageRoutes from './routes/message.routes';
 import callRoutes from './routes/call.routes';
+import contactRoutes from './routes/contact.routes';
 import { errorHandler } from './middleware/errorHandler';
 
 // Health check endpoint
@@ -44,6 +45,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/chats', chatRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/calls', callRoutes);
+app.use('/api/contacts', contactRoutes);
 
 // Error handling middleware (must be last)
 app.use(errorHandler);

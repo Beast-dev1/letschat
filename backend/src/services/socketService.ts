@@ -82,6 +82,11 @@ export const initializeSocket = (io: Server) => {
     socket.on('disconnect', async () => {
       console.log(`❌ User disconnected: ${userId} (socket: ${socket.id})`);
 
+      // Clear last seen interval
+      if ((socket as any).lastSeenInterval) {
+        clearInterval((socket as any).lastSeenInterval);
+      }
+
       // Remove socket from user's socket set
       const sockets = userSockets.get(userId);
       if (sockets) {
@@ -342,10 +347,69 @@ export const initializeSocket = (io: Server) => {
           where: { id: userId },
           data: { lastSeen: new Date() },
         });
+
+        // Broadcast last seen update to contacts
+        const contacts = await prisma.contact.findMany({
+          where: {
+            OR: [
+              { userId, status: 'accepted' },
+              { contactId: userId, status: 'accepted' },
+            ],
+          },
+          select: {
+            userId: true,
+            contactId: true,
+          },
+        });
+
+        const contactIds = contacts.map((c) => (c.userId === userId ? c.contactId : c.userId));
+        contactIds.forEach((contactId) => {
+          io.to(`user:${contactId}`).emit('user_last_seen_updated', {
+            userId,
+            lastSeen: new Date(),
+          });
+        });
       } catch (error) {
         console.error('Error updating last_seen:', error);
       }
     });
+
+    // Periodically update last_seen (every 30 seconds)
+    const lastSeenInterval = setInterval(async () => {
+      try {
+        await prisma.user.update({
+          where: { id: userId },
+          data: { lastSeen: new Date() },
+        });
+
+        // Broadcast last seen update to contacts
+        const contacts = await prisma.contact.findMany({
+          where: {
+            OR: [
+              { userId, status: 'accepted' },
+              { contactId: userId, status: 'accepted' },
+            ],
+          },
+          select: {
+            userId: true,
+            contactId: true,
+          },
+        });
+
+        const contactIds = contacts.map((c) => (c.userId === userId ? c.contactId : c.userId));
+        contactIds.forEach((contactId) => {
+          io.to(`user:${contactId}`).emit('user_last_seen_updated', {
+            userId,
+            lastSeen: new Date(),
+          });
+        });
+      } catch (error) {
+        console.error('Error updating last_seen:', error);
+      }
+    }, 30000);
+
+    // Store interval ID for cleanup
+    (socket as any).lastSeenInterval = lastSeenInterval;
   });
 };
 

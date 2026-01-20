@@ -8,6 +8,8 @@ import { useSocket } from '@/hooks/useSocket';
 import { Message, ChatType } from '@/types';
 import MessageBubble from './MessageBubble';
 import MessageInput from './MessageInput';
+import TypingIndicator from './TypingIndicator';
+import { useAuthStore } from '@/store/authStore';
 
 interface ChatWindowProps {
   chatId: string;
@@ -22,6 +24,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
 
   const { messages, setMessages, addMessage, selectedChat } = useChatStore();
   const { emitMarkRead, emitJoinChat } = useSocket();
+  const { user } = useAuthStore();
 
   const chatMessages = messages[chatId] || [];
 
@@ -189,6 +192,9 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
 
         <div ref={messagesEndRef} />
       </div>
+
+      {/* Typing indicator */}
+      <TypingIndicator chatId={chatId} userId={user?.id} />
 
       {/* Message input */}
       <MessageInput chatId={chatId} onMessageSent={scrollToBottom} />

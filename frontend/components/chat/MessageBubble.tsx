@@ -161,9 +161,11 @@ export default function MessageBubble({
           {isOwn && (
             <>
               {message.isRead ? (
-                <span className="text-blue-500">✓✓</span>
+                <span className="text-blue-500" title="Read">✓✓</span>
+              ) : message.readBy && message.readBy.length > 0 ? (
+                <span className="text-gray-500" title="Delivered">✓✓</span>
               ) : (
-                <span>✓</span>
+                <span className="text-gray-400" title="Sent">✓</span>
               )}
             </>
           )}
