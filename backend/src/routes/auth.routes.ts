@@ -1,13 +1,24 @@
 import { Router } from 'express';
-// TODO: Implement auth routes
+import {
+  register,
+  login,
+  refresh,
+  logout,
+  getMe,
+  updateProfile,
+} from '../controllers/authController';
+import { authenticate } from '../middleware/auth';
+
 const router = Router();
 
-// POST /api/auth/register
-// POST /api/auth/login
-// POST /api/auth/refresh
-// POST /api/auth/logout
-// GET /api/auth/me
-// PUT /api/auth/profile
+// Public routes
+router.post('/register', register);
+router.post('/login', login);
+router.post('/refresh', refresh);
+
+// Protected routes (require authentication)
+router.post('/logout', authenticate, logout);
+router.get('/me', authenticate, getMe);
+router.put('/profile', authenticate, updateProfile);
 
 export default router;
-
