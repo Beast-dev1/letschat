@@ -74,12 +74,12 @@ export const getChats = async (req: AuthRequest, res: Response) => {
 
         // For one-on-one chats, get the other user's info
         let chatName = chat.name;
-        let chatAvatar = chat.avatarUrl;
+        let chatAvatar: string | null = chat.avatarUrl;
         if (chat.type === ChatType.one_on_one) {
           const otherMember = chat.members.find((m) => m.userId !== userId);
           if (otherMember?.user) {
             chatName = otherMember.user.username;
-            chatAvatar = otherMember.user.avatarUrl || undefined;
+            chatAvatar = otherMember.user.avatarUrl || null;
           }
         }
 
@@ -318,7 +318,7 @@ export const createChat = async (req: AuthRequest, res: Response) => {
 export const getChat = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId!;
-    const { id } = req.params;
+    const id = req.params.id as string;
 
     // Verify user is a member
     const member = await prisma.chatMember.findUnique({
@@ -372,7 +372,7 @@ export const getChat = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ error: 'Chat not found' });
     }
 
-    const lastMessage = chat.messages[0] || null;
+    const lastMessage = (chat as any).messages?.[0] || null;
 
     res.json({
       id: chat.id,
@@ -382,7 +382,7 @@ export const getChat = async (req: AuthRequest, res: Response) => {
       createdBy: chat.createdBy,
       createdAt: chat.createdAt,
       updatedAt: chat.updatedAt,
-      members: chat.members.map((m) => ({
+      members: (chat as any).members.map((m: any) => ({
         id: m.id,
         chatId: m.chatId,
         userId: m.userId,
@@ -419,7 +419,7 @@ export const getChat = async (req: AuthRequest, res: Response) => {
 export const updateChat = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId!;
-    const { id } = req.params;
+    const id = req.params.id as string;
     const { name, avatarUrl } = req.body;
 
     // Verify user is a member and admin (for groups)
@@ -440,7 +440,7 @@ export const updateChat = async (req: AuthRequest, res: Response) => {
     }
 
     // For group chats, only admins can update
-    if (member.chat.type === ChatType.group && member.role !== ChatMemberRole.admin) {
+    if ((member as any).chat.type === ChatType.group && member.role !== ChatMemberRole.admin) {
       return res.status(403).json({ error: 'Only admins can update group chats' });
     }
 
@@ -476,7 +476,7 @@ export const updateChat = async (req: AuthRequest, res: Response) => {
       createdBy: updatedChat.createdBy,
       createdAt: updatedChat.createdAt,
       updatedAt: updatedChat.updatedAt,
-      members: updatedChat.members.map((m) => ({
+      members: (updatedChat as any).members.map((m: any) => ({
         id: m.id,
         chatId: m.chatId,
         userId: m.userId,
@@ -499,7 +499,7 @@ export const updateChat = async (req: AuthRequest, res: Response) => {
 export const deleteChat = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId!;
-    const { id } = req.params;
+    const id = req.params.id as string;
 
     // Verify user is a member
     const member = await prisma.chatMember.findUnique({
@@ -520,7 +520,7 @@ export const deleteChat = async (req: AuthRequest, res: Response) => {
 
     // For one-on-one chats, just remove the user from the chat
     // For group chats, only admins can delete (or remove themselves)
-    if (member.chat.type === ChatType.group && member.role !== ChatMemberRole.admin) {
+    if ((member as any).chat.type === ChatType.group && member.role !== ChatMemberRole.admin) {
       // Non-admin can only remove themselves
       await prisma.chatMember.delete({
         where: {
@@ -558,7 +558,7 @@ export const deleteChat = async (req: AuthRequest, res: Response) => {
 export const addMember = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId!;
-    const { id } = req.params;
+    const id = req.params.id as string;
     const { memberId } = req.body;
 
     if (!memberId) {
@@ -582,7 +582,7 @@ export const addMember = async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ error: 'You are not a member of this chat' });
     }
 
-    if (member.chat.type !== ChatType.group) {
+    if ((member as any).chat.type !== ChatType.group) {
       return res.status(400).json({ error: 'Can only add members to group chats' });
     }
 
@@ -640,7 +640,7 @@ export const addMember = async (req: AuthRequest, res: Response) => {
       role: newMember.role,
       joinedAt: newMember.joinedAt,
       lastReadAt: newMember.lastReadAt,
-      user: newMember.user,
+      user: (newMember as any).user,
     });
   } catch (error) {
     console.error('Error adding member:', error);
@@ -655,7 +655,8 @@ export const addMember = async (req: AuthRequest, res: Response) => {
 export const removeMember = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId!;
-    const { id, userId: targetUserId } = req.params;
+    const id = req.params.id as string;
+    const targetUserId = req.params.userId as string;
 
     // Verify user is admin or removing themselves
     const member = await prisma.chatMember.findUnique({
@@ -674,7 +675,7 @@ export const removeMember = async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ error: 'You are not a member of this chat' });
     }
 
-    if (member.chat.type !== ChatType.group) {
+    if ((member as any).chat.type !== ChatType.group) {
       return res.status(400).json({ error: 'Can only remove members from group chats' });
     }
 
