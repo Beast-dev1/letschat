@@ -29,7 +29,7 @@ interface AuthState {
     password: string;
   }) => Promise<{ user: User; accessToken: string; refreshToken: string }>;
   
-  refreshToken: () => Promise<string>;
+  refreshAccessToken: () => Promise<string>;
   
   updateProfile: (data: {
     avatarUrl?: string | null;
@@ -132,7 +132,7 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      refreshToken: async () => {
+      refreshAccessToken: async () => {
         const { refreshToken } = get();
         if (!refreshToken) {
           throw new Error('No refresh token available');

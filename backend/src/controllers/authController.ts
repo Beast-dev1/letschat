@@ -5,7 +5,6 @@ import { hashPassword, comparePassword } from '../utils/password';
 import { generateTokens, verifyRefreshToken, generateAccessToken } from '../utils/jwt';
 import redis from '../config/redis';
 import { AuthRequest } from '../middleware/auth';
-import { UserStatus } from '@prisma/client';
 
 // Validation schemas
 const registerSchema = z.object({
@@ -66,7 +65,7 @@ export const register = async (req: Request, res: Response) => {
         username,
         email,
         passwordHash,
-        status: UserStatus.offline,
+        status: 'offline',
       },
       select: {
         id: true,
@@ -97,7 +96,7 @@ export const register = async (req: Request, res: Response) => {
     if (error instanceof z.ZodError) {
       return res.status(400).json({
         error: 'Validation error',
-        details: error.errors,
+        details: error.issues,
       });
     }
     res.status(500).json({ error: 'Internal server error' });
@@ -133,7 +132,7 @@ export const login = async (req: Request, res: Response) => {
     const updatedUser = await prisma.user.update({
       where: { id: user.id },
       data: {
-        status: UserStatus.online,
+        status: 'online',
         lastSeen: new Date(),
       },
       select: {
@@ -165,7 +164,7 @@ export const login = async (req: Request, res: Response) => {
     if (error instanceof z.ZodError) {
       return res.status(400).json({
         error: 'Validation error',
-        details: error.errors,
+        details: error.issues,
       });
     }
     res.status(500).json({ error: 'Internal server error' });
@@ -219,7 +218,7 @@ export const refresh = async (req: Request, res: Response) => {
     if (error instanceof z.ZodError) {
       return res.status(400).json({
         error: 'Validation error',
-        details: error.errors,
+        details: error.issues,
       });
     }
     if (error instanceof Error && error.message.includes('Invalid or expired')) {
@@ -252,7 +251,7 @@ export const logout = async (req: AuthRequest, res: Response) => {
       await prisma.user.update({
         where: { id: req.userId },
         data: {
-          status: UserStatus.offline,
+          status: 'offline',
           lastSeen: new Date(),
         },
       });
@@ -321,7 +320,7 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
         }),
         ...(validatedData.bio !== undefined && { bio: validatedData.bio }),
         ...(validatedData.status && {
-          status: validatedData.status as UserStatus,
+          status: validatedData.status as 'online' | 'offline' | 'away',
         }),
       },
       select: {
@@ -345,7 +344,7 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
     if (error instanceof z.ZodError) {
       return res.status(400).json({
         error: 'Validation error',
-        details: error.errors,
+        details: error.issues,
       });
     }
     res.status(500).json({ error: 'Internal server error' });

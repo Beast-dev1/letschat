@@ -19,3 +19,5 @@ export const comparePassword = async (
   return bcrypt.compare(password, hash);
 };
 
+
+

@@ -35,3 +35,5 @@ NEXT_PUBLIC_STUN_SERVER=stun:stun.l.google.com:19302
 3. Update the values according to your local setup
 4. Make sure PostgreSQL and Redis are running (or use Docker Compose)
 
+
+
