@@ -388,7 +388,7 @@ export default function Home() {
 
       {/* CTA Section */}
       <div className="border-y border-dashed my-16 border-slate-200 w-full max-w-5xl mx-auto px-16">
-        <div className="flex flex-col md:flex-row text-center md:text-left items-center justify-between gap-8 px-3 md:px-10 border-x border-dashed border-slate-200 py-20 -mt-10 -mb-10 w-full">
+        <div className="flex flex-col md:flex-row text-center md:text-left items-center justify-between gap-8 px-3 md:px-10 border-x border-dashed border-slate-200 py-20 -mt-10 -mb-10 w-full bg-white">
           <p className="text-xl font-medium max-w-sm">
             Join thousands of users connecting on Let'sChat.
           </p>
