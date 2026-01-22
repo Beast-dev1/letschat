@@ -387,56 +387,45 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <div className="border-y border-dashed my-16 border-slate-200 w-full max-w-5xl mx-auto px-16">
-        <div className="flex flex-col md:flex-row text-center md:text-left items-center justify-between gap-8 px-3 md:px-10 border-x border-dashed border-slate-200 py-20 -mt-10 -mb-10 w-full bg-white">
-          <p className="text-xl font-medium max-w-sm">
-            Join thousands of users connecting on Let'sChat.
-          </p>
+      <section className="flex flex-col items-center justify-center mx-auto max-md:mx-2 max-md:px-2 max-w-5xl w-full text-center rounded-2xl py-16 bg-slate-100/70 my-16">
+        <svg width="42" height="42" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10.5 31.5L2 36l4.5-8.5a14 14 0 1 1 8 8z" stroke="#4F39F6" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+          <path d="M14 14h14M14 21h10" stroke="#4F39F6" strokeWidth="2.5" strokeLinecap="round"/>
+        </svg>
+        <h1 className="text-2xl md:text-3xl font-medium text-slate-900 max-w-2xl mt-5">
+          Join thousands of users connecting on Let'sChat.
+        </h1>
+        <p className="text-sm text-gray-500 max-w-lg mt-2">
+          Let'sChat gives you real-time messaging, video calls, and secure communication so you can stay connected with anyone, anywhere, anytime.
+        </p>
+        <div className="flex gap-2">
           {isAuthenticated ? (
             <Link
               href="/chat"
-              className="flex items-center gap-2 rounded-md py-3 px-5 bg-blue-600 hover:bg-blue-700 transition text-white"
+              className="px-8 py-2.5 mt-4 text-sm bg-indigo-600 hover:scale-105 transition duration-300 text-white rounded-md flex items-center gap-2"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                <polyline points="9 22 9 12 15 12 15 22" />
-              </svg>
-              <span>Go to Chat</span>
+              <MessageCircle className="w-4 h-4" />
+              Go to Chat
             </Link>
           ) : (
             <Link
               href="/register"
-              className="flex items-center gap-2 rounded-md py-3 px-5 bg-blue-600 hover:bg-blue-700 transition text-white"
+              className="px-8 py-2.5 mt-4 text-sm bg-indigo-600 hover:scale-105 transition duration-300 text-white rounded-md flex items-center gap-2"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
-                <path d="M9 18c-4.51 2-5-2-7-2" />
-              </svg>
-              <span>Get Started</span>
+              <MessageCircle className="w-4 h-4" />
+              Get Started
             </Link>
           )}
+          <button className="flex items-center gap-2 px-8 py-2.5 mt-4 text-sm hover:scale-105 transition duration-300 rounded-md text-gray-700 hover:text-gray-900">
+            Github
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <g clipPath="url(#a)">
+                <path fillRule="evenodd" clipRule="evenodd" d="M7 0C3.133 0 0 3.133 0 7a7 7 0 0 0 4.786 6.641c.35.062.482-.149.482-.332 0-.166-.01-.718-.01-1.304-1.758.324-2.213-.429-2.353-.823-.079-.2-.42-.822-.717-.988-.246-.132-.596-.455-.01-.464.552-.009.946.508 1.077.717.63 1.06 1.636.762 2.039.578.061-.455.245-.761.446-.936-1.557-.175-3.185-.779-3.185-3.456 0-.762.271-1.392.717-1.882-.07-.175-.314-.892.07-1.855 0 0 .587-.183 1.926.718a6.5 6.5 0 0 1 1.75-.236c.595 0 1.19.078 1.75.236 1.338-.91 1.925-.718 1.925-.718.385.963.14 1.68.07 1.855a2.7 2.7 0 0 1 .717 1.882c0 2.686-1.636 3.28-3.194 3.456.254.218.473.638.473 1.295 0 .936-.009 1.688-.009 1.925 0 .184.131.402.481.332A7.01 7.01 0 0 0 14 7c0-3.867-3.133-7-7-7" fill="#364153"/>
+              </g>
+            </svg>
+          </button>
         </div>
-      </div>
+      </section>
 
       {/* Footer */}
       <footer id="footer" className="relative overflow-hidden px-6 md:px-16 lg:px-24 xl:px-32 w-full text-sm text-slate-500 bg-white pt-10">
