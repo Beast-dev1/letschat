@@ -53,8 +53,8 @@ export default function LoginPage() {
       <div className="w-full hidden md:inline-block">
         <img 
           className="h-full w-full object-cover" 
-          src="https://raw.githubusercontent.com/prebuiltui/prebuiltui/main/assets/login/leftSideImage.png" 
-          alt="leftSideImage"
+          src="/loginandsignupimg.png" 
+          alt="Grandparents video calling their grandson studying abroad"
         />
       </div>
 

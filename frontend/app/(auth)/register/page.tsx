@@ -143,8 +143,8 @@ export default function RegisterPage() {
       <div className="w-full hidden md:inline-block">
         <img 
           className="h-full w-full object-cover" 
-          src="https://raw.githubusercontent.com/prebuiltui/prebuiltui/main/assets/login/leftSideImage.png" 
-          alt="Signup illustration"
+          src="/loginandsignupimg.png" 
+          alt="Grandparents video calling their grandson studying abroad"
         />
       </div>
 
