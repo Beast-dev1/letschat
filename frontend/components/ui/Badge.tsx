@@ -1,6 +1,8 @@
+import { ReactNode } from 'react';
+
 interface BadgeProps {
   text: string;
-  icon?: React.ReactNode;
+  icon?: ReactNode;
   variant?: 'blue' | 'purple' | 'green' | 'red' | 'yellow';
   className?: string;
 }
