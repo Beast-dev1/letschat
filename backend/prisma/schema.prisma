@@ -7,7 +7,10 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  // For migrations: DIRECT_URL should be your direct PostgreSQL connection string
+  // (not the Accelerate URL). Get this from your Prisma dashboard.
+  // For queries: The app uses accelerateUrl in PrismaClient (see database.ts)
+  url = env("DATABASE_URL")
 }
 
 enum ChatType {
