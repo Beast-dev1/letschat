@@ -1,14 +1,201 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+// Enums
+enum UserStatus {
+  online
+  offline
+  away
+}
+
+enum ChatType {
+  one_on_one
+  group
+}
+
+enum ChatMemberRole {
+  member
+  admin
+}
+
+enum MessageType {
+  text
+  image
+  file
+  audio
+  video
+}
+
+enum ContactStatus {
+  pending
+  accepted
+  blocked
+}
+
+enum CallType {
+  audio
+  video
+}
+
+enum CallStatus {
+  initiated
+  accepted
+  rejected
+  ended
+  missed
+}
+
+// Models
+model User {
+  id           String     @id @default(uuid())
+  username     String     @unique
+  email        String     @unique
+  passwordHash String     @map("password_hash")
+  avatarUrl    String?    @map("avatar_url")
+  status       UserStatus @default(offline)
+  lastSeen     DateTime?  @map("last_seen")
+  bio          String?
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  // Relations
+  createdChats    Chat[]       @relation("ChatCreator")
+  chatMemberships ChatMember[]
+  sentMessages    Message[]    @relation("MessageSender")
+  contacts        Contact[]    @relation("ContactUser")
+  contactOf       Contact[]    @relation("ContactContact")
+  initiatedCalls  CallLog[]    @relation("CallCaller")
+  receivedCalls   CallLog[]    @relation("CallReceiver")
+
+  @@index([email])
+  @@index([username])
+  @@map("users")
+}
+
+model Chat {
+  id        String   @id @default(uuid())
+  type      ChatType
+  name      String?
+  avatarUrl String?  @map("avatar_url")
+  createdBy String   @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  creator  User         @relation("ChatCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  members  ChatMember[]
+  messages Message[]
+  callLogs CallLog[]
+
+  @@index([createdBy])
+  @@index([updatedAt(sort: Desc)])
+  @@map("chats")
+}
+
+model ChatMember {
+  id         String         @id @default(uuid())
+  chatId     String         @map("chat_id")
+  userId     String         @map("user_id")
+  role       ChatMemberRole @default(member)
+  joinedAt   DateTime       @default(now()) @map("joined_at")
+  lastReadAt DateTime?      @map("last_read_at")
+
+  // Relations
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([chatId, userId])
+  @@index([userId])
+  @@index([chatId])
+  @@map("chat_members")
+}
+
+model Message {
+  id        String      @id @default(uuid())
+  chatId    String      @map("chat_id")
+  senderId  String      @map("sender_id")
+  content   String      @db.Text
+  type      MessageType @default(text)
+  fileUrl   String?     @map("file_url")
+  replyToId String?     @map("reply_to_id")
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
+  deletedAt DateTime?   @map("deleted_at")
+
+  // Relations
+  chat    Chat          @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  sender  User          @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  replyTo Message?      @relation("MessageReply", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies Message[]     @relation("MessageReply")
+  reads   MessageRead[]
+
+  @@index([chatId, createdAt(sort: Desc)])
+  @@index([senderId])
+  @@index([replyToId])
+  @@map("messages")
+}
+
+model MessageRead {
+  id        String   @id @default(uuid())
+  messageId String   @map("message_id")
+  userId    String   @map("user_id")
+  readAt    DateTime @default(now()) @map("read_at")
+
+  // Relations
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId])
+  @@index([userId])
+  @@index([messageId])
+  @@map("message_reads")
+}
+
+model Contact {
+  id        String        @id @default(uuid())
+  userId    String        @map("user_id")
+  contactId String        @map("contact_id")
+  status    ContactStatus @default(pending)
+  createdAt DateTime      @default(now()) @map("created_at")
+
+  // Relations
+  user    User @relation("ContactUser", fields: [userId], references: [id], onDelete: Cascade)
+  contact User @relation("ContactContact", fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, contactId])
+  @@index([userId])
+  @@index([contactId])
+  @@index([status])
+  @@map("contacts")
+}
+
+model CallLog {
+  id         String     @id @default(uuid())
+  callerId   String     @map("caller_id")
+  receiverId String     @map("receiver_id")
+  chatId     String     @map("chat_id")
+  type       CallType
+  status     CallStatus @default(initiated)
+  startedAt  DateTime   @default(now()) @map("started_at")
+  endedAt    DateTime?  @map("ended_at")
+  duration   Int? // Duration in seconds
+
+  // Relations
+  caller   User @relation("CallCaller", fields: [callerId], references: [id], onDelete: Cascade)
+  receiver User @relation("CallReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  chat     Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  @@index([callerId])
+  @@index([receiverId])
+  @@index([chatId])
+  @@index([startedAt(sort: Desc)])
+  @@map("call_logs")
 }
